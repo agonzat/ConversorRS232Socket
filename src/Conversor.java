@@ -1,5 +1,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,10 +27,15 @@ public class Conversor implements SerialPortEventListener {
 	DataOutputStream serverOutputStream;
 	DataInputStream  serverInputStream;
 	
+	public static void main(String[] args) {
+		new Conversor(4444);
+	}
+	
 	public Conversor(int port){
 		initComm();
 		try {
 			servidor = new Servidor(port);
+			servidor.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -43,11 +49,13 @@ public class Conversor implements SerialPortEventListener {
 		serialPort = null;
 		commOutputStream = null;
 		commInputStream = null;
+		System.out.println("Buscando serial...");
 		
 		portList = CommPortIdentifier.getPortIdentifiers();
 		if (portList.hasMoreElements()) {
 			portId = (CommPortIdentifier) portList.nextElement();
 			if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+				System.out.println("\nSe ha encontrado un serial " + portId.getName());
 				try {
 					serialPort = (SerialPort) portId.open("Conversor", 2000);
 				} catch (PortInUseException e) {
@@ -97,18 +105,27 @@ public class Conversor implements SerialPortEventListener {
 	            serverInputStream = new DataInputStream(server.getInputStream());
 	            serverOutputStream = new DataOutputStream(server.getOutputStream());
 	            
+	            
 	            while(true){
-	            	char[] a = serverInputStream.readUTF().toCharArray();
+	            	/*char[] a = serverInputStream.readUTF().toCharArray();
 	 	            for(char c : a){
+	 	            	System.out.println("Byte recibido por socket\n");
 	 	            	commOutputStream.write(c);
-	 	            }
-	            }
+	 	            }*/
+	            		int a = serverInputStream.read();
+	            		if (a == -1) throw new SocketTimeoutException();
+	            		commOutputStream.write(a);
+	            	}
+	         }catch(EOFException e){
+	        	 System.out.println("Desconectado");
+	        	 serverInputStream = null;
+		         serverOutputStream = null;
 	         }catch(SocketTimeoutException s)
 	         {
 	            System.out.println("Socket timed out!");
 	            serverInputStream = null;
 	            serverOutputStream = null;
-	            break;
+	           // break;
 	         }catch(IOException e)
 	         {
 	            e.printStackTrace();
@@ -120,7 +137,8 @@ public class Conversor implements SerialPortEventListener {
 
 	@Override
 	public void serialEvent(SerialPortEvent arg0) {
-		 int data;         
+		 int data;
+		 System.out.println("Recibidos datos seriales\n");
          try
          {
              while ( ( data = commInputStream.read()) > -1 ) {
