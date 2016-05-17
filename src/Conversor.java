@@ -107,11 +107,6 @@ public class Conversor implements SerialPortEventListener {
 	            
 	            
 	            while(true){
-	            	/*char[] a = serverInputStream.readUTF().toCharArray();
-	 	            for(char c : a){
-	 	            	System.out.println("Byte recibido por socket\n");
-	 	            	commOutputStream.write(c);
-	 	            }*/
 	            		int a = serverInputStream.read();
 	            		if (a == -1) throw new SocketTimeoutException();
 	            		commOutputStream.write(a);
