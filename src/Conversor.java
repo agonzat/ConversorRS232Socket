@@ -115,18 +115,10 @@ public class Conversor implements SerialPortEventListener {
 	        	 System.out.println("Desconectado");
 	        	 serverInputStream = null;
 		         serverOutputStream = null;
+		         break;
 	         }catch(SocketTimeoutException s)
 	         {
 	            System.out.println("Socket timed out!");
-	            try {
-	            	serverOutputStream.close();
-					serverInputStream.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-	           
-	           // break;
 	         }catch(IOException e)
 	         {
 	            e.printStackTrace();
